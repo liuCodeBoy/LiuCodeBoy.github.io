@@ -3,14 +3,24 @@
 <head>
   <meta charset="utf-8">
   
-  <title>liuCodeBoy</title>
+  <title>iOS Node(架构篇) | liuCodeBoy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="liuCodeBoy">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="主要简介 View代码结构的规定 关于view的布局 何时使用storyboard，何时使用nib，何时使用代码写View 是否有必要让业务方统一派生ViewController？    不要在viewDidLoad里面初始化你的view然后再add，这样代码就很难看。在viewDidload里面只做addSubview的事情，然后在viewWillAppear里面做布局的事情，最后在viewDi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS Node(架构篇)">
+<meta property="og:url" content="http://yoursite.com/2017/06/18/iOS-Node/index.html">
 <meta property="og:site_name" content="liuCodeBoy">
+<meta property="og:description" content="主要简介 View代码结构的规定 关于view的布局 何时使用storyboard，何时使用nib，何时使用代码写View 是否有必要让业务方统一派生ViewController？    不要在viewDidLoad里面初始化你的view然后再add，这样代码就很难看。在viewDidload里面只做addSubview的事情，然后在viewWillAppear里面做布局的事情，最后在viewDi">
+<meta property="og:image" content="http://cc.cocimg.com/api/uploads/20150522/1432264217309340.jpg">
+<meta property="og:image" content="http://cc.cocimg.com/api/uploads/20150522/1432264239743352.jpg">
+<meta property="og:image" content="http://cc.cocimg.com/api/uploads/20150522/1432264253909859.jpg">
+<meta property="og:image" content="http://cc.cocimg.com/api/uploads/20150522/1432264253909859.jpg">
+<meta property="og:image" content="http://cc.cocimg.com/api/uploads/20150522/1432261506429014.gif">
+<meta property="og:updated_time" content="2017-06-19T11:01:23.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="liuCodeBoy">
+<meta name="twitter:title" content="iOS Node(架构篇)">
+<meta name="twitter:description" content="主要简介 View代码结构的规定 关于view的布局 何时使用storyboard，何时使用nib，何时使用代码写View 是否有必要让业务方统一派生ViewController？    不要在viewDidLoad里面初始化你的view然后再add，这样代码就很难看。在viewDidload里面只做addSubview的事情，然后在viewWillAppear里面做布局的事情，最后在viewDi">
+<meta name="twitter:image" content="http://cc.cocimg.com/api/uploads/20150522/1432264217309340.jpg">
   
     <link rel="alternate" href="/atom.xml" title="liuCodeBoy" type="application/atom+xml">
   
@@ -59,9 +69,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-iOS-Node" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-iOS-Node" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/06/18/iOS-Node/" class="article-date">
   <time datetime="2017-06-18T04:05:14.000Z" itemprop="datePublished">2017-06-18</time>
@@ -74,8 +82,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/06/18/iOS-Node/">iOS Node(架构篇)</a>
+    <h1 class="article-title" itemprop="name">
+      iOS Node(架构篇)
     </h1>
   
 
@@ -190,10 +198,9 @@
     </footer>
   </div>
   
-</article>
-
-
+    
   
+</article>
 
 </section>
         
