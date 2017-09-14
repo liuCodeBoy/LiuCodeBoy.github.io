@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>CoreAnimation | liuCodeBoy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="pop是Facebook在开源的一款动画引擎，看下其官方的介绍： Pop是一款在iOS、tvOS和OS X平台通用的可扩展动画引擎。它在基本静态动画的基础上，增加了弹性以及衰减动画，这在创建真实有物里性的交互很有用。其API能够快速的整合进已有的Objective-C工程，可以对任意对象的任意属性做动画。这是一个成熟且经过测试的框架，在Paper这款优秀的app中有广泛的应用。（iOS7之后苹果也">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CoreAnimation">
+<meta property="og:url" content="http://yoursite.com/2017/09/01/CoreAnimation/index.html">
+<meta property="og:site_name" content="liuCodeBoy">
+<meta property="og:description" content="pop是Facebook在开源的一款动画引擎，看下其官方的介绍： Pop是一款在iOS、tvOS和OS X平台通用的可扩展动画引擎。它在基本静态动画的基础上，增加了弹性以及衰减动画，这在创建真实有物里性的交互很有用。其API能够快速的整合进已有的Objective-C工程，可以对任意对象的任意属性做动画。这是一个成熟且经过测试的框架，在Paper这款优秀的app中有广泛的应用。（iOS7之后苹果也">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/458529-56f51bb99592b3a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/500">
+<meta property="og:updated_time" content="2017-09-14T12:11:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CoreAnimation">
+<meta name="twitter:description" content="pop是Facebook在开源的一款动画引擎，看下其官方的介绍： Pop是一款在iOS、tvOS和OS X平台通用的可扩展动画引擎。它在基本静态动画的基础上，增加了弹性以及衰减动画，这在创建真实有物里性的交互很有用。其API能够快速的整合进已有的Objective-C工程，可以对任意对象的任意属性做动画。这是一个成熟且经过测试的框架，在Paper这款优秀的app中有广泛的应用。（iOS7之后苹果也">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/458529-56f51bb99592b3a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/500">
+  
+    <link rel="alternate" href="/atom.xml" title="liuCodeBoy" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">liuCodeBoy</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-CoreAnimation" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/01/CoreAnimation/" class="article-date">
+  <time datetime="2017-09-01T03:05:14.000Z" itemprop="datePublished">2017-09-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      CoreAnimation
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>pop是Facebook在开源的一款动画引擎，看下其官方的介绍：</p>
+<p><code>Pop是一款在iOS、tvOS和OS X平台通用的可扩展动画引擎。它在基本静态动画的基础上，增加了弹性以及衰减动画，这在创建真实有物里性的交互很有用。其API能够快速的整合进已有的Objective-C工程，可以对任意对象的任意属性做动画。这是一个成熟且经过测试的框架，在Paper这款优秀的app中有广泛的应用。（iOS7之后苹果也提供了Spring动画(不过CASpringAnimation iOS9才提供)以及UIDynamic物理引擎(比如碰撞以及重力等物理效果不错，有兴趣可以玩玩)）</code><br>那Pop动画引擎跟CoreAnimation有啥区别？我们先来简单了解一下苹果的CoreAnimation:</p>
+<h2 id="CoreAnimation"><a href="#CoreAnimation" class="headerlink" title="CoreAnimation"></a>CoreAnimation</h2><p>先看下CoreAnimation在框架中所处的位置：<br> <img src="http://upload-images.jianshu.io/upload_images/458529-56f51bb99592b3a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/500" alt=""></p>
+<p> 可以看出视图的渲染以及动画都是基于CoreAnimation框架(看名字容易以为只是动画相关)，其地位还是相当重要。我们来看下iOS在视图的渲染以及动画的各个阶段，这其中涉及到应用内部以及应用外部：</p>
+<p>应用内部4个阶段：</p>
+<ul>
+<li>布局<br>这个阶段是用户在程序内部设置组织视图或图层的关系，比如设置view的backgroundColor、frame等属性；</li>
+<li>显示<br>这是图层的寄宿图片被绘制的阶段，比如实现了-drawRect:或-drawLayer:inContext:方法，这些方法会这这个阶段执行，这些绘制方法是由CPU在应用内部同步地完成，属于离屏渲染。</li>
+<li>准备<br>这个阶段，CoreAnimation框架会将渲染视图的各种属性以及动画的参数等数据准备好；同时这个阶段还会解压需要渲染的image。</li>
+<li>提交<br>这是在应用内部发生的最后阶段，CoreAnimation打包准备好的所有视图/图层以及动画的属性，然后通过IPC(进程间通信)发送到render server进行显示，可以看到其实视图的渲染以及动画是在另外一个进程处理的。在iOS5和之前的版本是SpringBoard进程（同时管理着iOS的主屏），在iOS6之后的版本中叫做BackBoard。</li>
+</ul>
+<p>应用外部2个阶段：<br>一旦这些打包好的数据到达render server，这些数据会被反序列化成另一个叫做渲染树的图层树，根据这个树状结构，render server做如下工作：</p>
+<ul>
+<li>根据layer的属性值，如果图层包含动画，则计算其属性的中间插值，然后设置OpenGL几何形状（纹理化的三角形）来执行渲染</li>
+<li>在屏幕上渲染可见的三角形<br>所以整个阶段包含六个阶段，如果有动画，最后两个阶段会重复的执行。前五个阶段都是通过CPU处理的，只有最后一个阶段使用GPU。而且你能控制的只有前面两个阶段：布局和显示，剩下都是CoreAnimation框架在内部进行处理。</li>
+</ul>
+<p>简单了解完CoreAnimaton的工作方式之后，我们在来看看pop实现动画的方式。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/01/CoreAnimation/" data-id="cj7kf0gch0000pp6f5ipdy7h9" class="article-share-link">Partager</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/14/SDWebImage源码剖析(一)/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Récent</strong>
+      <div class="article-nav-title">
+        
+          SDWebImage源码剖析(一)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/06/18/iOS-Node/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">iOS Node(架构篇)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/14/SDWebImage源码剖析(一)/">SDWebImage源码剖析(一)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/01/CoreAnimation/">CoreAnimation</a>
+          </li>
+        
+          <li>
+            <a href="/2017/06/18/iOS-Node/">iOS Node(架构篇)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 lxq<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
