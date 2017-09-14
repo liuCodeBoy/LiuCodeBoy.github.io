@@ -105,7 +105,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/09/14/SDWebImage源码剖析(一)/" data-id="cj7kf0gcp0002pp6fc1v3o7q3" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/09/14/SDWebImage源码剖析(一)/" data-id="cj7kiaeqf0003ne6fjtn0l3xr" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -158,7 +158,79 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/09/01/CoreAnimation/" data-id="cj7kf0gch0000pp6f5ipdy7h9" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/09/01/CoreAnimation/" data-id="cj7kiaeqa0001ne6fxid955kk" class="article-share-link">Partager</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post- iOS应用程序间共享数据" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/18/ iOS应用程序间共享数据/" class="article-date">
+  <time datetime="2017-07-18T04:05:14.000Z" itemprop="datePublished">2017-07-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/18/ iOS应用程序间共享数据/">iOS应用程序间共享数据</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们知道iOS由于沙盒的存在，应用程序不能越过自己的区域去访问别的存储空间的内容，不过可能有许多场景我们需要在应用程序之间共享数据，比如多个应用共用用户名密码进行登录等。虽然我们不能直接通过文件系统来分享数据，不过还是有些方法可以实现，为了方便说明，这里同时创建了两个工程Example1和Example2，实现这两个app之间的信息共享，Example1负责写数据，Example2负责读数据，具体的demo代码可以到<a href="https://github.com/FreeMind-LJ/SharedDataDemo" target="_blank" rel="external">这里</a>获取</p>
+<h2 id="UIPasteboard"><a href="#UIPasteboard" class="headerlink" title="UIPasteboard"></a>UIPasteboard</h2><p>剪贴板是应用程序之间传递数据的简单方式，建议不要使用全局的粘贴板，而是自己根据名字创建一个新的粘贴板，防止其它地方全局拷贝的影响。然后把需要共享的内容复制到粘贴板，粘贴板的内容可以是文本、URL、图片和UIColor等，另一个app就可以根据粘贴板的名字去读取相关的信息。</p>
+<p>Example1设置粘贴板的内容:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">UIPasteboard *pasteboard = [UIPasteboard pasteboardWithName:@&quot;myPasteboard&quot; create:YES];</div><div class="line">  pasteboard.string = @&quot;myShareData&quot;;</div></pre></td></tr></table></figure>
+<p>Example2读取粘贴板的内容:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">UIPasteboard *pasteboard = [UIPasteboard pasteboardWithName:@&quot;myPasteboard&quot; create:NO];</div><div class="line">   NSString *content = pasteboard.string;</div></pre></td></tr></table></figure>
+<h2 id="Custom-URL-Scheme"><a href="#Custom-URL-Scheme" class="headerlink" title="Custom URL Scheme"></a>Custom URL Scheme</h2><p>URL Scheme能够让我们通过自定义的协议在应用程序间传递信息，当你想要发送数据给一个实现了自定义URL Scheme的应用时，只需要创建好合适格式的URL，然后调用openURL:方法，系统就会载入注册了该scheme的应用然后将你的URL传递给他，比如如下的代码,todolist是一个其它应用注册的scheme，通过openURL便可以将服务请求发送到该应用（自定义的URL Scheme要能够唯一标示该APP，如果你的URL Scheme跟别人冲突了，那么你的app就不一定会被调起，iOS并不保证调用哪个应用）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">NSURL *myURL = [NSURL URLWithString:@&quot;todolist://newid=20&quot;];</div><div class="line">[[UIApplication sharedApplication] openURL:myURL];</div></pre></td></tr></table></figure>
+<ul>
+<li><p>注册URL Scheme</p>
+<p>为了能够处理URL请求，我们需要先注册自定义的URL Scheme，只需要在Info tab下的URL Types添加即可，比如我们这里注册Example2的URL Scheme。</p>
+</li>
+</ul>
+<p><img src="http://upload-images.jianshu.io/upload_images/458529-cee0e4ad11ffc587.png?imageMogr2/auto-orient/strip%7CimageView2/2" alt=""></p>
+<p>Identifier用于标示名称，为了唯一性可以采用反转域名的形式，另外我们设置URL Scheme为Example2，以及role为Viewer(Viewer表示只能读取改URL但不能修改，Editor可以对URL进行读写)，这样Example2就能够接受类似”Example2:\”的URL请求了，可以在浏览器中输入”Example2:\”链接打开app。</p>
+<ul>
+<li>处理URL请求</li>
+</ul>
+<p>当有URL请求到来时，所有的URL都会传递给你的app delegate，我们需要实现application:openURL:sourceApplication:annotation:方法来接收处理对应的URL，所以假如你想通过URL方式来传递数据，只需要将数据添加到URL中即可，另外的通过解析该URL来获取对应的数据。</p>
+<p>Eaxmple1发送携带参数的URL到Example2:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">NSString *string = @&quot;Example2://name=jiangbin#age=1&quot;;</div><div class="line">NSURL *url = [NSURL URLWithString:string];</div><div class="line">[[UIApplication sharedApplication] openURL:url];</div></pre></td></tr></table></figure>
+<p>Example2处理URL请求并解析:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">-(BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation</div><div class="line">&#123;</div><div class="line">    if ([[url scheme] isEqualToString:@&quot;Example2&quot;]) &#123;</div><div class="line">        NSString *content = [url resourceSpecifier];</div><div class="line">        //解析content获取数据</div><div class="line">        //...</div><div class="line">        return YES;</div><div class="line">    &#125;</div><div class="line">    return NO;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="Shared-Keychain-Access"><a href="#Shared-Keychain-Access" class="headerlink" title="Shared Keychain Access"></a>Shared Keychain Access</h2><p>iOS的keychain提供一种安全保存信息的方式，可以保存密码等数据，而且keychain中的数据不会因为你删除app而丢失，你可以在重新安装后继续读取keychain中的数据。通常每个应用程序只允许访问自己在keychain中保存的数据，不过假如你使用同一个证书的话，不同的app也可以通过keychain来实现应用间的数据共享，之前下载百度贴吧应用的时候发现首次打开它就自动登录了，可能百度的应用之间就是通过这种方式共享用户名密码进行登录的，之前登录过百度云。</p>
+<p>为了实现keychain共享数据，我们需要开启Keychain Sharing，开启方法如下，然后添加设置相同的Keychain Group，不过别忘记了添加Security.framework。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/458529-00ce1a0c8ccf752c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/500" alt=""><br><img src="http://upload-images.jianshu.io/upload_images/458529-33c95673f2c49a7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/500" alt=""><br>Example1保存数据到keychain(为了简单使用)<a href="https://github.com/soffes/SAMKeychain" target="_blank" rel="external">SSKeychian</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (void)setKeyChain</div><div class="line">&#123;</div><div class="line">    [SSKeychain setPassword:@&quot;shareData&quot; forService:@&quot;myservice&quot; account:@&quot;jiangbin&quot;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Example2读取数据</p>
+<figure class="highlight plain"><figcaption><span>(IBAction)getByKeychain:(id)sender</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    NSString *myData = [SSKeychain passwordForService:@&quot;myservice&quot; account:@&quot;jiangbin&quot;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>App Groups</p>
+<p>iOS8之后苹果加入了App Groups功能，应用程序之间可以通过同一个group来共享资源，app group可以通过NSUserDefaults进行小量数据的共享，如果需要共享较大的文件可以通过NSFileCoordinator、NSFilePresenter等方式。<br>开启app groups，需要添加一个group name，app之间通过这个group共享数据：</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/458529-f5aca858ca61a215.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/500" alt=""></p>
+<p>Example1根据group name设置内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (void)setAppGroup</div><div class="line">&#123;</div><div class="line">    NSUserDefaults *myDefaults = [[NSUserDefaults alloc]</div><div class="line">                                  initWithSuiteName:@&quot;group.com.jiangbin.SharedData&quot;];</div><div class="line">    [myDefaults setObject:@&quot;shared data&quot; forKey:@&quot;mykey&quot;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Example2根据group name读取数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (void)setAppGroup</div><div class="line">&#123;</div><div class="line">    NSUserDefaults *myDefaults = [[NSUserDefaults alloc]</div><div class="line">                                  initWithSuiteName:@&quot;group.com.jiangbin.SharedData&quot;];</div><div class="line">    [myDefaults setObject:@&quot;shared data&quot; forKey:@&quot;mykey&quot;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/07/18/ iOS应用程序间共享数据/" data-id="cj7kiaeq40000ne6ffdsalnhf" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -291,7 +363,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/18/iOS-Node/" data-id="cj7kf0gcn0001pp6fcj2l0557" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/06/18/iOS-Node/" data-id="cj7kiaeqd0002ne6fj5s5uju4" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -318,7 +390,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
   </div>
 
@@ -336,6 +408,10 @@
         
           <li>
             <a href="/2017/09/01/CoreAnimation/">CoreAnimation</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/18/ iOS应用程序间共享数据/">iOS应用程序间共享数据</a>
           </li>
         
           <li>
