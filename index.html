@@ -50,7 +50,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -63,18 +63,27 @@
   
     <article id="post-SDWebImage源码剖析(一)" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2017/09/12/SDWebImage源码剖析(一)/" class="article-date">
-  <time datetime="2017-09-12T12:11:00.000Z" itemprop="datePublished">2017-09-12</time>
+    <a href="/2017/09/14/SDWebImage源码剖析(一)/" class="article-date">
+  <time datetime="2017-09-14T04:05:14.000Z" itemprop="datePublished">2017-09-14</time>
 </a>
     
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/09/14/SDWebImage源码剖析(一)/">SDWebImage源码剖析(一)</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p>#SDWebImage源码剖析</p>
-<p>  在开发项目的过程中会用到很多第三方库，比如AFNetWorking,SDWebImage,FMDB等，但一直都没去好好的研究一下，最近刚好项目不是太紧，闲下来可以给自己充充电，先研究一下SDWebImage的底层实现，源码地址：<a href="https://github.com/rs/SDWebImage" target="_blank" rel="external">SDWebImage</a><br>  介绍一下SDWebImage，我们使用较多的是它提供的UIImageView分类，支持从远程服务器下载并缓存图片。自从iOS5.0开始，NSURLCache也可以处理磁盘缓存，那么SDWebImage的优势在哪？首先NSURLCache是缓存原始数据(raw data)到磁盘或内存，因此每次使用的时候需要将原始数据转换成具体的对象，如UIImage等，这会导致额外的数据解析以及内存占用等，而SDWebImage则是缓存UIImage对象在内存，缓存在NSCache中，同时直接保存压缩过的图片到磁盘中；还有一个问题是当你第一次在UIImageView中使用image对象的时候，图片的解码是在主线程中运行的！而SDWebImage会强制将解码操作放到子线程中。下图是SDWebImage简单的类图关系：</p>
+        <h2 id="SDWebImage源码剖析-一"><a href="#SDWebImage源码剖析-一" class="headerlink" title="SDWebImage源码剖析(一)"></a>SDWebImage源码剖析(一)</h2><p>  在开发项目的过程中会用到很多第三方库，比如AFNetWorking,SDWebImage,FMDB等，但一直都没去好好的研究一下，最近刚好项目不是太紧，闲下来可以给自己充充电，先研究一下SDWebImage的底层实现，源码地址：<a href="https://github.com/rs/SDWebImage" target="_blank" rel="external">SDWebImage</a><br>  介绍一下SDWebImage，我们使用较多的是它提供的UIImageView分类，支持从远程服务器下载并缓存图片。自从iOS5.0开始，NSURLCache也可以处理磁盘缓存，那么SDWebImage的优势在哪？首先NSURLCache是缓存原始数据(raw data)到磁盘或内存，因此每次使用的时候需要将原始数据转换成具体的对象，如UIImage等，这会导致额外的数据解析以及内存占用等，而SDWebImage则是缓存UIImage对象在内存，缓存在NSCache中，同时直接保存压缩过的图片到磁盘中；还有一个问题是当你第一次在UIImageView中使用image对象的时候，图片的解码是在主线程中运行的！而SDWebImage会强制将解码操作放到子线程中。下图是SDWebImage简单的类图关系：</p>
 <p><img src="http://upload-images.jianshu.io/upload_images/458529-c1788a3eb9134b64.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240/format/jpg" alt=""></p>
 <hr>
 <p>下面从UIImageView的图片加载开始看起，Let’s go!</p>
@@ -96,7 +105,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/09/12/SDWebImage源码剖析(一)/" data-id="cj7kd5stk0000ii6fuwqtbsk9" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/09/14/SDWebImage源码剖析(一)/" data-id="cj7kdbb560001qy6fi1vq89fd" class="article-share-link">Share</a>
       
       
     </footer>
@@ -229,7 +238,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/18/iOS-Node/" data-id="cj7kd5stq0001ii6fcuj6x002" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/06/18/iOS-Node/" data-id="cj7kdbb500000qy6fadi07p8s" class="article-share-link">Share</a>
       
       
     </footer>
@@ -254,7 +263,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archieven</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -264,12 +273,12 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recente berichten</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
           <li>
-            <a href="/2017/09/12/SDWebImage源码剖析(一)/">(no title)</a>
+            <a href="/2017/09/14/SDWebImage源码剖析(一)/">SDWebImage源码剖析(一)</a>
           </li>
         
           <li>
