@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>细说@synchronized和dispatch_once | liuCodeBoy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="通常我们在实现单例时候都会使用synchronized或者dispatch_once方法，初始化往往是下面的样子：使用synchronized方法实现： 12345678910static id obj = nil;+(instancetype)shareInstance&amp;#123;    @synchronized(self) &amp;#123;        if (!obj) &amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="细说@synchronized和dispatch_once">
+<meta property="og:url" content="http://yoursite.com/2017/09/15/细说-synchronized和dispatch-once/index.html">
+<meta property="og:site_name" content="liuCodeBoy">
+<meta property="og:description" content="通常我们在实现单例时候都会使用synchronized或者dispatch_once方法，初始化往往是下面的样子：使用synchronized方法实现： 12345678910static id obj = nil;+(instancetype)shareInstance&amp;#123;    @synchronized(self) &amp;#123;        if (!obj) &amp;#123;">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/458529-1c42de5d32202095.png?imageMogr2/auto-orient/strip%7CimageView2/2">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/458529-2d1119321803ee9b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-09-15T11:41:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="细说@synchronized和dispatch_once">
+<meta name="twitter:description" content="通常我们在实现单例时候都会使用synchronized或者dispatch_once方法，初始化往往是下面的样子：使用synchronized方法实现： 12345678910static id obj = nil;+(instancetype)shareInstance&amp;#123;    @synchronized(self) &amp;#123;        if (!obj) &amp;#123;">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/458529-1c42de5d32202095.png?imageMogr2/auto-orient/strip%7CimageView2/2">
+  
+    <link rel="alternate" href="/atom.xml" title="liuCodeBoy" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">liuCodeBoy</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-细说-synchronized和dispatch-once" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/15/细说-synchronized和dispatch-once/" class="article-date">
+  <time datetime="2017-09-15T10:46:33.000Z" itemprop="datePublished">2017-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      细说@synchronized和dispatch_once
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>通常我们在实现单例时候都会使用synchronized或者dispatch_once方法，初始化往往是下面的样子：<br>使用synchronized方法实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">static id obj = nil;</div><div class="line">+(instancetype)shareInstance</div><div class="line">&#123;</div><div class="line">    @synchronized(self) &#123;</div><div class="line">        if (!obj) &#123;</div><div class="line">            obj = [[SingletonObj alloc] init];</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    return obj;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>使用dispatch_once方法实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">static id obj = nil;</div><div class="line">+(instancetype)shareInstance</div><div class="line">&#123;</div><div class="line">    static dispatch_once_t onceToken;</div><div class="line">    dispatch_once(&amp;onceToken, ^&#123;</div><div class="line">        obj = [[SingletonObj alloc] init];</div><div class="line">    &#125;);</div><div class="line">    return obj;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="性能差异"><a href="#性能差异" class="headerlink" title="性能差异"></a>性能差异</h3><p> 上面的这些写法大家应该都很熟悉，既然两种方式都能实现，我们来看看两者的性能差异，这里简单写了个测试的<a href="https://github.com/FreeMind-LJ/SingletonTest" target="_blank" rel="external">demo</a>，使用两个方法分单线程跟多线程(采用dispatch_apply方式，性能相对较高)去访问一个单例对象一百万次，对比这期间的耗时，从iPod跟5s测试得到如下的结果
+ </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">//ipod，主线程</div><div class="line">    SingletonTest[4285:446820] synchronized time cost:2.202945s</div><div class="line">    SingletonTest[4285:446820] dispatch_once time cost:0.761034s</div><div class="line"></div><div class="line">    //5s，主线程</div><div class="line">    SingletonTest[5372:2394430] synchronized time cost:0.466293s</div><div class="line">    SingletonTest[5372:2394430] dispatch_once time cost:0.070822s</div><div class="line"></div><div class="line">    //ipod，多线程</div><div class="line">    SingletonTest[4315:448499] synchronized time cost:3.385109s</div><div class="line">    SingletonTest[4315:448499] dispatch_once time cost:0.908009s</div><div class="line"></div><div class="line">    //5s，多线程</div><div class="line">    SingletonTest[5391:2399069] synchronized time cost:0.507504s</div><div class="line">    SingletonTest[5391:2399069] dispatch_once time cost:0.169934s</div></pre></td></tr></table></figure>
+<p> 可以发现dispatch_once方法的性能要明显优于synchronized方法(多线程不采用dispathc_apply方式差距更明显)，所以在实际的应用中我们可以多采用dispatch_once方式来实现单例。通常使用的时候了解这些就够了，不过想知道两者的具体差异就需要我们再迈进一步。</p>
+<h3 id="深入-synchronized-object"><a href="#深入-synchronized-object" class="headerlink" title="深入@synchronized(object)"></a>深入@synchronized(object)</h3><p>翻看苹果的<a href="https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/Multithreading/ThreadSafety/ThreadSafety.html#//apple_ref/doc/uid/10000057i-CH8-SW3" target="_blank" rel="external">文档</a>可以发现 @synchronized指令内部使用锁来实现多线程的安全访问，并且隐式添加了一个异常处理的handler，当异常发生时会自动释放锁。在<a href="https://stackoverflow.com/questions/1215330/how-does-synchronized-lock-unlock-in-objective-c/6047218#6047218" target="_blank" rel="external">stackoverflow</a>上看到@synchronized指令其实可以转换成objc_sync_enter跟objc_sync_exit，可以在<objc objc-sync.h="">头文件中找到这两个函数:</objc></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">//Allocates recursive pthread_mutex associated with &apos;obj&apos; if needed</div><div class="line">int objc_sync_enter(id obj)</div><div class="line"></div><div class="line">//End synchronizing on &apos;obj&apos;</div><div class="line">int objc_sync_exit(id obj)</div></pre></td></tr></table></figure>
+<p>根据注释文档，objc_sync_enter会根据需要给每个传进来的对象创建一个互斥锁并lock，然后objc_sync_exit的时候unlock，这样就可以通过这个锁来实现多线程的安全访问，所以结合苹果文档可以认为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">@synchronized(self) &#123;</div><div class="line">    //thread safe code</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>等价于</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@try &#123;</div><div class="line">    objc_sync_enter(self);</div><div class="line">    // thread safe code</div><div class="line">&#125; @finally &#123;</div><div class="line">    objc_sync_exit(self);    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  庆幸的是苹果已经将objc-runtime这部分开源，所以我们可以更进一步了解内部的实现，源码在<a href="https://opensource.apple.com/source/objc4/objc4-680/runtime/objc-sync.mm" target="_blank" rel="external">这里</a>，有兴趣也可以自己去查阅，这里简单介绍一下。<br>让我们先来看看几个数据结构，其中有些涉及到缓存，我们就不去考虑了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">typedef struct SyncData &#123;</div><div class="line">    struct SyncData* nextData;</div><div class="line">    DisguisedPtr&lt;objc_object&gt; object;</div><div class="line">    int32_t threadCount;  // number of THREADS using this block</div><div class="line">    recursive_mutex_t mutex;</div><div class="line">&#125; SyncData;</div><div class="line"></div><div class="line">struct SyncList &#123;</div><div class="line">    SyncData *data;</div><div class="line">    spinlock_t lock;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">#define LOCK_FOR_OBJ(obj) sDataLists[obj].lock</div><div class="line">#define LIST_FOR_OBJ(obj) sDataLists[obj].data</div><div class="line">static StripedMap&lt;SyncList&gt; sDataLists;</div></pre></td></tr></table></figure>
+<p>首先看看SyncData这个数据结构，包含一个指向object的指针，这个object对象就是我们@synchronized时传进来的对象，也包含一个跟object关联的递归互斥锁recursive_mutex_t，该锁用来互斥访问object对象；同时还包含一个指向下一个SyncData的指针nextData，可以看出SyncData是一个链表中的节点；至于threadCount，这个值标示有几个线程正在访问这个对象，当threadCount==0的时候，会重用该SyncData对象，这是为了节省内存。<br>  接下来看看SyncList，SyncList其实就是一个链表，data指向第一个SyncData节点，lock则是为了多线程安全访问该链表。<br>  最后看下sDataLists静态哈希表对象，它以obj的指针为key,对应的value为SyncList链表。<br>  了解上面之后，我们就可以看看objc_sync_enter跟objc_sync_exit的具体实现（摘取部分代码）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div></pre></td><td class="code"><pre><div class="line">//根据object对象去查询相应的SyncData对象，如果没有则创建一个新的</div><div class="line">static SyncData* id2data(id object, enum usage why)</div><div class="line">&#123;</div><div class="line">    spinlock_t *lockp = &amp;LOCK_FOR_OBJ(object);</div><div class="line">    SyncData **listp = &amp;LIST_FOR_OBJ(object);</div><div class="line">    SyncData* result = NULL;</div><div class="line"></div><div class="line">    //lock，多线程安全访问SyncList</div><div class="line">    lockp-&gt;lock();</div><div class="line">    &#123;</div><div class="line">        SyncData* p;</div><div class="line">        SyncData* firstUnused = NULL;</div><div class="line">        for (p = *listp; p != NULL; p = p-&gt;nextData) &#123;</div><div class="line">            //找到object对象对应的SyncData对象，增加其threadCount计数，然后返回</div><div class="line">            if ( p-&gt;object == object ) &#123;</div><div class="line">                result = p;</div><div class="line">                OSAtomicIncrement32Barrier(&amp;result-&gt;threadCount);</div><div class="line">                goto done;</div><div class="line">            &#125;</div><div class="line">            //当threadCount == 0时，设置当前SyncData为可重用</div><div class="line">            if ( (firstUnused == NULL) &amp;&amp; (p-&gt;threadCount == 0) )</div><div class="line">                firstUnused = p;</div><div class="line">        &#125;</div><div class="line">        // 如果有可重用的节点，则使用当前SyncData节点，SyncData的object指针指向新的object对象</div><div class="line">        if ( firstUnused != NULL ) &#123;</div><div class="line">            result = firstUnused;</div><div class="line">            result-&gt;object = (objc_object *)object;</div><div class="line">            result-&gt;threadCount = 1;</div><div class="line">            goto done;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    //如果没有可重用的节点，则创建一个新的SyncData节点</div><div class="line">    result = (SyncData*)calloc(sizeof(SyncData), 1);</div><div class="line"></div><div class="line">    //将新的SyncData节点的object指针指向传进来的object对象</div><div class="line">    result-&gt;object = (objc_object *)object;</div><div class="line">    result-&gt;threadCount = 1;</div><div class="line"></div><div class="line">    //创建一个新的与该object关联的递归互斥锁</div><div class="line">    new (&amp;result-&gt;mutex) recursive_mutex_t();</div><div class="line">    result-&gt;nextData = *listp;</div><div class="line">    *listp = result;</div><div class="line"></div><div class="line"> done:</div><div class="line">    lockp-&gt;unlock();</div><div class="line">    return result;</div><div class="line">&#125;</div><div class="line"></div><div class="line">int objc_sync_enter(id obj)</div><div class="line">&#123;</div><div class="line">    int result = OBJC_SYNC_SUCCESS;</div><div class="line">    if (obj) &#123;</div><div class="line">        //根据obj指针的哈希值查找对应的SyncData,threadcount计数加一</div><div class="line">        SyncData* data = id2data(obj, ACQUIRE);</div><div class="line"></div><div class="line">        //使用SyncData的互斥锁上锁</div><div class="line">        data-&gt;mutex.lock();</div><div class="line">    &#125; else &#123;</div><div class="line">        // @synchronized(nil) 传入nil时什么也不处理</div><div class="line">    &#125;</div><div class="line">    return result;</div><div class="line">&#125;</div><div class="line"></div><div class="line">int objc_sync_exit(id obj)</div><div class="line">&#123;</div><div class="line">    int result = OBJC_SYNC_SUCCESS;</div><div class="line">    if (obj) &#123;</div><div class="line">        //根据obj指针的哈希值查找对应的SyncData，threadcount计数减一</div><div class="line">        SyncData* data = id2data(obj, RELEASE);</div><div class="line"></div><div class="line">        //使用SyncData的互斥锁解锁 </div><div class="line">        bool okay = data-&gt;mutex.tryUnlock();</div><div class="line">        if (!okay) &#123;</div><div class="line">           result = OBJC_SYNC_NOT_OWNING_THREAD_ERROR;</div><div class="line">        &#125;</div><div class="line">    &#125; else &#123;</div><div class="line">        // @synchronized(nil) 传入nil时什么也不处理</div><div class="line">    &#125;</div><div class="line">    return result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>简单来说，调用objc_sync_enter(obj)时，会根据obj指针在哈希表sDataLists对应的链表SyncList，然后在链表中查询对应obj的SyncData对象，如果查询不到则创建一个新的SyncData对象（包含创建跟obj相关的递归互斥锁）并添加到链表中，然后使用SyncData对象上锁；调用objc_sync_exit(obj)时，使用SyncData对象解锁，因此通过这个锁便可确保@synchronized之间的代码线程安全。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/458529-1c42de5d32202095.png?imageMogr2/auto-orient/strip%7CimageView2/2" alt=""></p>
+<h3 id="深入dispatch-once"><a href="#深入dispatch-once" class="headerlink" title="深入dispatch_once"></a>深入dispatch_once</h3><p>探讨了synchronized之后，我们再来说说dispatch_once。<br><code>void dispatch_once(dispatch_once_t *predicate, dispatch_block_t block);</code><br>  根据<a href="https://developer.apple.com/documentation/dispatch#//apple_ref/c/func/dispatch_once" target="_blank" rel="external">官方文档</a>,dispatch_once可以用来初始化一些全局的数据，它能够确保block代码在app的生命周期内仅被运行一次，而且还是线程安全的，不需要额外加锁；predicate必须指向一个全局或者静态的变量，不过使用predicate的话结果是未定义的，不过predicate有啥作用，如何实现block在整个生命周期执行一次？那我们只能从源码查找(源码地址：<a href="https://opensource.apple.com/source/libdispatch/libdispatch-84.5/src/" target="_blank" rel="external">once</a>)。<br>不过在这之前先简要介绍一下:</p>
+<ul>
+<li><p>bool __sync_bool_compare_and_swap (type ptr, type oldval type newval, …)<br>提供原子的比较和交换操作，如果当前值 <em>ptr == oldval，就将newval写入</em>ptr，当比较赋值操作成功后返回true</p>
+</li>
+<li><p>*__sync_synchronize (…)<br>调用这个函数会产生一个full <a href="https://en.wikipedia.org/wiki/Memory_barrier" target="_blank" rel="external">memory barrier</a> ，用于保证CPU按照我们代码编写的顺序来执行代码，比如：</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">doJob1();</div><div class="line">doJob2();</div><div class="line">__sync_synchronize();  //Job3会在Job1跟Job2完成后才执行</div><div class="line">doJob3();</div></pre></td></tr></table></figure>
+<ul>
+<li>type __sync_swap(type *ptr, type value, …)</li>
+</ul>
+<p>提供原子交换操作的函数，交换第一个跟第二个参数的值，然后返回交换前第一个参数的旧值。</p>
+<ul>
+<li>_dispatch_hardware_pause()</li>
+</ul>
+<p>调用这个函数主要是暗示处理器不要做额外的优化处理等，提高性能，节省CPU时间。</p>
+<ul>
+<li>信号量</li>
+</ul>
+<p>信号量是一个非负整数，定义了两种原子操作：wait跟signal来进行访，信号量主要用于线程同步。当一个线程调用wait操作时，如果信号量的值大于0，则获得资源并将信号量值减一，如果等于0线程睡眠直到信号量值大于0或者超时；singal将信号量的值加1，如果这时候有正在等待的线程，唤醒该线程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">// 创建一个信号量，其值为0        </div><div class="line">dispatch_semaphore_t sema = dispatch_semaphore_create(0);</div><div class="line">ABAddressBookRequestAccessWithCompletion(addressBook, ^(bool granted, CFErrorRef error) &#123;</div><div class="line">    //操作完成后，调用signal信号量+1</div><div class="line">    dispatch_semaphore_signal(sema);</div><div class="line">&#125;);</div><div class="line">//等待dispatch_semaphore_signal将信号量值加1后才继续运行</div><div class="line">dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);</div></pre></td></tr></table></figure>
+<p>接下来看看具体代码，当我们调用dispatch_once时候，内部是调用dispatch_once_f函数，其中val就是外部传入的predicate值，ctxt为Block的指针，func则是Block内部具体实现的函数指针，由于源码比较短，所以我直接把源码贴出来(为了方便查看，有些不使用宏定义)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line">struct _dispatch_once_waiter_s &#123;</div><div class="line">    volatile struct _dispatch_once_waiter_s *volatile dow_next;</div><div class="line">    _dispatch_thread_semaphore_t dow_sema;</div><div class="line">&#125;;</div><div class="line">#define DISPATCH_ONCE_DONE ((struct _dispatch_once_waiter_s *)~0l)</div><div class="line">void dispatch_once(dispatch_once_t *val, dispatch_block_t block)</div><div class="line">&#123;</div><div class="line">    struct Block_basic *bb = (void *)block;</div><div class="line">    dispatch_once_f(val, block, (void *)bb-&gt;Block_invoke);</div><div class="line">&#125;</div><div class="line"></div><div class="line">void dispatch_once_f(dispatch_once_t *val, void *ctxt, dispatch_function_t func)</div><div class="line">&#123;</div><div class="line">    //volatile，标示该变量随时可能改变，编译器不会对访问该变量的代码进行优化，每次都从内存去读取，而不使用寄存器里的值</div><div class="line">    struct _dispatch_once_waiter_s * volatile *vval =</div><div class="line">            (struct _dispatch_once_waiter_s**)val;</div><div class="line">    struct _dispatch_once_waiter_s dow = &#123; NULL, 0 &#125;;</div><div class="line">    struct _dispatch_once_waiter_s *tail, *tmp;</div><div class="line">    _dispatch_thread_semaphore_t sema;</div><div class="line"></div><div class="line">    //第一次执行的时候，predicate的值为0，所以vval＝NULL，原子比较交换函数返回true</div><div class="line">    //然后vval指向dow(dispatch_once_waiter_s，信号量的值为0，即等待中)</div><div class="line">    if (__sync_bool_compare_and_swap(vval, NULL, &amp;dow)) &#123;</div><div class="line"></div><div class="line">        //空的宏定义，啥也不做</div><div class="line">        dispatch_atomic_acquire_barrier();</div><div class="line"></div><div class="line">        //执行dispatch_once传进来的block</div><div class="line">        _dispatch_client_callout(ctxt, func);</div><div class="line"></div><div class="line">        //后面解释</div><div class="line">        dispatch_atomic_maximally_synchronizing_barrier();</div><div class="line"></div><div class="line">        //执行完block之后，将vval的值设为DISPATCH_ONCE_DONE(即predicate设为~0l）</div><div class="line">        tmp = __sync_swap(vval, DISPATCH_ONCE_DONE);  </div><div class="line">        tail = &amp;dow;</div><div class="line"></div><div class="line">        //1.如果在block的执行过程中，没有其线程调用该函数等待，tmp的值也为&amp;dow,tail==tmp，循环的条件不满足，函数执行完毕</div><div class="line">        //2.如果在block的执行过程中，有其线程调用该函数等待，历遍信号量链表，逐个唤醒线程继续运行</div><div class="line">        while (tail != tmp) &#123;</div><div class="line">            //如果中途有其它线程将vval赋值&amp;dow，这期间dow_next值为NULL，需要等待，参见else分支的__sync_bool_compare_and_swap调用</div><div class="line">            while (!tmp-&gt;dow_next) &#123;</div><div class="line">                _dispatch_hardware_pause();</div><div class="line">            &#125;</div><div class="line">            sema = tmp-&gt;dow_sema;</div><div class="line">            tmp = (struct _dispatch_once_waiter_s*)tmp-&gt;dow_next;</div><div class="line">            _dispatch_thread_semaphore_signal(sema);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    else </div><div class="line">    &#123;   </div><div class="line">        //如果vval不等NULL，走这个分支，非第一次调用dispatch_once，其它线程调用</div><div class="line">        //获取信号量，如果有信号量则返回该信号量，如果没有则在当前线程创建一个新的信号量</div><div class="line">        dow.dow_sema = _dispatch_get_thread_semaphore();</div><div class="line">        for (;;) &#123;</div><div class="line">            tmp = *vval;</div><div class="line"></div><div class="line">            //vval已经被赋值为~0l，证明block已经被执行了，退出然后调用_dispatch_put_thread_semaphore销毁信号量</div><div class="line">            if (tmp == DISPATCH_ONCE_DONE) &#123;</div><div class="line">                break;</div><div class="line">            &#125;</div><div class="line">            //空的宏定义，啥也不做</div><div class="line">            dispatch_atomic_store_barrier();</div><div class="line"></div><div class="line">            //将当前信号量加入到信号链表中，然后线程等待，</div><div class="line">            if (__sync_bool_compare_and_swap(vval, tmp, &amp;dow)) &#123;</div><div class="line">                dow.dow_next = tmp;</div><div class="line">                _dispatch_thread_semaphore_wait(dow.dow_sema);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            //如果vval的指向值不再是tmp，可能其它线程同时进入该分支，然后调用__sync_bool_compare_and_swap原子操作将vval指向了新的节点，</div><div class="line">            //则重新开始for循环</div><div class="line">        &#125;</div><div class="line">        _dispatch_put_thread_semaphore(dow.dow_sema);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>让我们来看看dispatch_once是如何确保block只执行一次。简单来说，当线程A在调用执行block并设置predicate为DISPATCH_ONCE_DONE(~0l)期间，如果有其他线程也在调用disptach_once，则这些线程会等待，各线程对应的信号量会加入到信号量链表中，等predicate设置为DISPATCH_ONCE_DONE后，也就是block执行完了，会根据信号量链表唤醒各个线程使其继续执行。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/458529-2d1119321803ee9b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>不过有一种临界情况，假如线程A在执行block，但是创建单例对象obj还未完成，这时候线程B获取该obj对象，此时obj＝nil，而线程B在线程A将predicate设为DISPATCH_ONCE_DONE之后读取predicate，这是线程B会认为单例对象已经初始化完成，然后使用空的obj对象，这就会导致错误发生。因此dispatch_once会在执行完block之后会执行dispatch_atomic_maximally_synchronizing_barrier()调用，这个调用会执行一些cpuid指令，确保线程A创建单例对象obj以及置predicate为DISPATCH_ONCE_DONE的时间TimeA大于线程B进入block并读取predicate值的时间TimeB。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">#define dispatch_atomic_maximally_synchronizing_barrier() \</div><div class="line">    do &#123; unsigned long _clbr; __asm__ __volatile__( \</div><div class="line">    &quot;cpuid&quot; \</div><div class="line">    : &quot;=a&quot; (_clbr) : &quot;0&quot; (0) : &quot;ebx&quot;, &quot;ecx&quot;, &quot;edx&quot;, &quot;cc&quot;, &quot;memory&quot; \</div><div class="line">    ); &#125; while(0)</div></pre></td></tr></table></figure>
+<p>  除此之外，每次调用dispatch_once的时候，都会先判断predicate的值是否是~0l(也就是DISPATCH_ONCE_DONE)，如果是则意味着block已经执行过了，便不再执行，代码如下：
+  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">void dispatch_once(dispatch_once_t *predicate, dispatch_block_t block);</div><div class="line">#ifdef __GNUC__</div><div class="line">#define dispatch_once(x, ...) do &#123; if (__builtin_expect(*(x), ~0l) != ~0l) dispatch_once((x), (__VA_ARGS__)); &#125; while (0)</div><div class="line">#endif</div></pre></td></tr></table></figure>
+<p>让我们看看这里面的__builtin_expect((x), (v))，这又是一个优化的地方。。。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">__builtin_expect()目的是将“分支转移”的信息提供给编译器，这样编译器可以对代码进行优化，</div><div class="line">以减少指令跳转带来的性能下降。</div><div class="line">__builtin_expect((x),1) 表示 x 的值为真的可能性更大； </div><div class="line">__builtin_expect((x),0) 表示 x 的值为假的可能性更大。</div></pre></td></tr></table></figure>
+<p>由于dispatch_once的只执行block一次，所以我们更期望的是已经block已经执行完了，也就是predict的值为~0l的可能性更大。<br>  现在我们清楚dispatch_once是如何确保block只执行一次了，关键就在predict这个值，通过比较这个值等于0或者~0l来判断block是否执行过，这也就是为啥我们需要将这个值设为static或者全局的缘故，因为各个线程都要去访问这个predict，有兴趣的可以试试把predicate的初始值设为非0或者非静态全局变量会发生什么～～</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>  通过上面的分析，我们知道@synchronized采用的是递归互斥锁来实现线程安全，而dispatch_once的内部则使用了很多原子操作来替代锁，以及通过信号量来实现线程同步，而且有很多针对处理器优化的地方，甚至在if判断语句上也做了优化(逼格有点高)，使得其效率有很大的提升，虽然其源码很短，但里面包含的东西却很多，所以苹果也推荐使用dispatch_once来创建单例。通过这个简短的dispatch_once，你也可以清楚为什么GCD的性能会这么高了，感兴趣可以再去看看libdispatch的其它源码。。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://opensource.apple.com/source/objc4/objc4-680/runtime/objc-sync.mm" target="_blank" rel="external">objc-sync</a><br><a href="">synchronized</a><br><a href="https://developer.apple.com/documentation/dispatch#//apple_ref/c/func/dispatch_once" target="_blank" rel="external">dispatch_once</a><br><a href="http://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Atomic-Builtins.html#Atomic-Builtins" target="_blank" rel="external">Built-in functions for atomic</a><br><a href="https://kernelnewbies.org/FAQ/LikelyUnlikely" target="_blank" rel="external">__builtin_expect</a> </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/15/细说-synchronized和dispatch-once/" data-id="cj7ltd60o0003s16f2bv7qtrl" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/09/14/SDWebImage源码剖析(一)/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SDWebImage源码剖析(一)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/15/细说-synchronized和dispatch-once/">细说@synchronized和dispatch_once</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/14/SDWebImage源码剖析(一)/">SDWebImage源码剖析(一)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/01/CoreAnimation/">CoreAnimation</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/18/ iOS应用程序间共享数据/">iOS应用程序间共享数据</a>
+          </li>
+        
+          <li>
+            <a href="/2017/06/18/iOS-Node/">iOS Node(架构篇)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 lxq<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
