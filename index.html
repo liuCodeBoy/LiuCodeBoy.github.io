@@ -142,7 +142,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/09/15/细说-synchronized和dispatch-once/" data-id="cj7ltd60o0003s16f2bv7qtrl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/09/15/细说-synchronized和dispatch-once/" data-id="cj7lwtglm0005z76f96iqwex7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -196,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/09/14/SDWebImage源码剖析(一)/" data-id="cj7ltd60k0002s16fgqjmr02r" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/09/14/SDWebImage源码剖析(一)/" data-id="cj7lwtglh0002z76ff0otyvoq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -249,7 +249,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/09/01/CoreAnimation/" data-id="cj7ltd5zr0000s16ft1gv33b5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/09/01/CoreAnimation/" data-id="cj7lwtglf0001z76fs98uxwi4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -321,7 +321,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/18/ iOS应用程序间共享数据/" data-id="cj7ltd60h0001s16flj2jt43s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/18/ iOS应用程序间共享数据/" data-id="cj7lwtgl90000z76feolsr6zf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -454,7 +454,204 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/18/iOS-Node/" data-id="cj7ltd60p0004s16f90eif3iy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/18/iOS-Node/" data-id="cj7lwtglk0004z76fjm3pv16x" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-GCD" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/15/GCD/" class="article-date">
+  <time datetime="2016-09-15T11:57:29.000Z" itemprop="datePublished">2016-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/09/15/GCD/">GCD</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>  <img src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1505487179667&amp;di=acbe44c07cb22f601e3a09ba43346ccf&amp;imgtype=0&amp;src=http%3A%2F%2Fbizhi.zhuoku.com%2F2011%2F08%2F29%2Fjingxuan%2Fjingxuan165.jpg" alt=""><br>  在之前我们介绍过NSOperation的一些东西，这次我们来聊一聊另一个iOS开发最经常使用的技术之一 — GCD，GCD将线程的管理移到系统级别，你只需要定义好要执行的任务，然后丢到合适的Dispatch queue，GCD会负责创建线程来执行你的代码，由于这部分是处于系统级别，所以执行的性能通常非常高。GCD这部分代码苹果已开源，有兴趣的可以去下载了解一下:<a href="https://apple.github.io/swift-corelibs-libdispatch/" target="_blank" rel="external">地址</a><br>在介绍GCD之前我们先了解一下Quality of Service：</p>
+<h3 id="Quality-of-Service-QoS"><a href="#Quality-of-Service-QoS" class="headerlink" title="Quality of Service(QoS)"></a>Quality of Service(QoS)</h3><p>这是在iOS8之后提供的新功能，苹果提供了几个Quality of Service枚举来使用:user interactive, user initiated, utility 和 background，通过这告诉系统我们在进行什么样的工作，然后系统会通过合理的资源控制来最高效的执行任务代码，其中主要涉及到CPU调度的优先级、IO优先级、任务运行在哪个线程以及运行的顺序等等，我们通过一个抽象的Quality of Service参数来表明任务的意图以及类别。</p>
+<ul>
+<li>NSQualityOfServiceUserInteractive</li>
+</ul>
+<p>与用户交互的任务，这些任务通常跟UI级别的刷新相关，比如动画，这些任务需要在一瞬间完成<br>NSQualityOfServiceUserInitiated<br>由用户发起的并且需要立即得到结果的任务，比如滑动scroll view时去加载数据用于后续cell的显示，这些任务通常跟后续的用户交互相关，在几秒或者更短的时间内完成</p>
+<ul>
+<li>NSQualityOfServiceUtility</li>
+</ul>
+<p>一些可能需要花点时间的任务，这些任务不需要马上返回结果，比如下载的任务，这些任务可能花费几秒或者几分钟的时间</p>
+<ul>
+<li>NSQualityOfServiceBackground</li>
+</ul>
+<p>这些任务对用户不可见，比如后台进行备份的操作，这些任务可能需要较长的时间，几分钟甚至几个小时</p>
+<ul>
+<li>NSQualityOfServiceDefault</li>
+</ul>
+<p>优先级介于user-initiated 和 utility，当没有 QoS信息时默认使用，开发者不应该使用这个值来设置自己的任务</p>
+<p>Qos可以跟GCD queue做个对照：<br><img src="http://upload-images.jianshu.io/upload_images/458529-74ed8a8b44ba56e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>下面我们了解一下GCD的一些用法：</p>
+<h3 id="Dispatch-Queue"><a href="#Dispatch-Queue" class="headerlink" title="Dispatch Queue"></a>Dispatch Queue</h3><p>开发者将需要执行的任务添加到合适的Dispatch Queue中即可，Dispatch Queue会根据任务添加的顺序先到先执行，其中有以下几种队列：</p>
+<ul>
+<li>main dispatch queue</li>
+</ul>
+<p>功能跟主线程一样，通过dispatch_get_main_queue()来获取，提交到main queue的任务实际上都是在主线程执行的，所以这是一个串行队列</p>
+<ul>
+<li>global dispatch queues</li>
+</ul>
+<p>系统给每个应用提供四个全局的并发队列，这四个队列分别有不同的优先级：高、默认、低以及后台，用户不能去创建全局队列，只能根据优先级去获取:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue ; </div><div class="line">queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);</div></pre></td></tr></table></figure>
+<ul>
+<li>user create queue</li>
+</ul>
+<p>用户可以通过dispatch_queue_create自己创建队列，该函数有两个参数，第一个是队列的名称，在debug的时候方便区分；第二个是队列的一些属性，NULL或者DISPATCH_QUEUE_SERIAL创建出来的队列是串行队列，如果传递DISPATCH_QUEUE_CONCURRENT则为并行队列。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">//创建并行队列</div><div class="line">dispatch_queue_t queue;</div><div class="line">queue = dispatch_queue_create(&quot;com.example.MyQueue&quot;, DISPATCH_QUEUE_CONCURRENT);</div></pre></td></tr></table></figure>
+<ul>
+<li>队列优先级<br>dispatch_queue_create创建队列的优先级跟global dispatch queue的默认优先级一样，假如我们需要设置队列的优先级，可以通过dispatch_queue_attr_make_with_qos_class或者dispatch_set_target_queue方法；</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">//指定队列的QoS类别为QOS_CLASS_UTILITY</div><div class="line">dispatch_queue_attr_t queue_attr = dispatch_queue_attr_make_with_qos_class (DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY,-1);</div><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, queue_attr);</div></pre></td></tr></table></figure>
+<p>dispatch_set_target_queue的第一个参数为要设置优先级的queue,第二个参数是对应的优先级参照物</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t serialQueue = dispatch_queue_create(&quot;com.example.MyQueue&quot;,NULL);  </div><div class="line">dispatch_queue_t globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0);  </div><div class="line"></div><div class="line">//serialQueue现在的优先级跟globalQueue的优先级一样</div><div class="line">dispatch_set_target_queue(serialQueue, globalQueue);</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_set_target_queue</li>
+</ul>
+<p>dispatch_set_target_queue除了能用来设置队列的优先级之外，还能够创建队列的层次体系，当我们想让不同队列中的任务同步的执行时，我们可以创建一个串行队列，然后将这些队列的target指向新创建的队列即可，比如<br><img src="http://upload-images.jianshu.io/upload_images/458529-f9e00e6cbc2000c8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t targetQueue = dispatch_queue_create(&quot;target_queue&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">  dispatch_queue_t queue1 = dispatch_queue_create(&quot;queue1&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">  dispatch_queue_t queue2 = dispatch_queue_create(&quot;queue2&quot;, DISPATCH_QUEUE_CONCURRENT);</div><div class="line">  dispatch_set_target_queue(queue1, targetQueue);</div><div class="line">  dispatch_set_target_queue(queue2, targetQueue);</div><div class="line">  dispatch_async(queue1, ^&#123;</div><div class="line">        NSLog(@&quot;do job1&quot;);</div><div class="line">        [NSThread sleepForTimeInterval:3.f];</div><div class="line">    &#125;);</div><div class="line">  dispatch_async(queue2, ^&#123;</div><div class="line">        NSLog(@&quot;do job2&quot;);</div><div class="line">        [NSThread sleepForTimeInterval:2.f];</div><div class="line">    &#125;);</div><div class="line">  dispatch_async(queue2, ^&#123;</div><div class="line">        NSLog(@&quot;do job3&quot;);</div><div class="line">        [NSThread sleepForTimeInterval:1.f];</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>可以看到执行的结果如下，这些队列会同步的执行任务。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GCDTests[13323:569147] do job1</div><div class="line">GCDTests[13323:569147] do job2</div><div class="line">GCDTests[13323:569147] do job3</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_barrier_async</li>
+</ul>
+<p>dispatch_barrier_async用于等待前面的任务执行完毕后自己才执行，而它后面的任务需等待它完成之后才执行。一个典型的例子就是数据的读写，通常为了防止文件读写导致冲突，我们会创建一个串行的队列，所有的文件操作都是通过这个队列来执行，比如FMDB，这样就可以避免读写冲突。不过其实这样效率是有提升的空间的，当没有更新数据时，读操作其实是可以并行进行的，而写操作需要串行的执行，如何实现呢：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;Database_Queue&quot;, DISPATCH_QUEUE_CONCURRENT);</div><div class="line"></div><div class="line">    dispatch_async(queue, ^&#123;</div><div class="line">        NSLog(@&quot;reading data1&quot;);</div><div class="line">    &#125;);</div><div class="line">    dispatch_async(queue, ^&#123;</div><div class="line">        NSLog(@&quot;reading data2&quot;);</div><div class="line">    &#125;);</div><div class="line">    dispatch_barrier_async(queue, ^&#123;</div><div class="line">        NSLog(@&quot;writing data1&quot;);</div><div class="line">        [NSThread sleepForTimeInterval:1];</div><div class="line"></div><div class="line">    &#125;);</div><div class="line">    dispatch_async(queue, ^&#123;</div><div class="line">        [NSThread sleepForTimeInterval:1];</div><div class="line">        NSLog(@&quot;reading data3&quot;);</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>执行结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">GCDTests[13360:584316] reading data2</div><div class="line">GCDTests[13360:584317] reading data1</div><div class="line">GCDTests[13360:584317] writing data1</div><div class="line">GCDTests[13360:584317] reading data3</div></pre></td></tr></table></figure>
+<p>我们将写数据的操作放在dispatch_barrier_async中，这样能确保在写数据的时候会等待前面的读操作完成，而后续的读操作也会等到写操作完成后才能继续执行，提高文件读写的执行效率。</p>
+<p>dispatch_queue_set_specific 、dispatch_get_specific<br>这两个API类似于objc_setAssociatedObject跟objc_getAssociatedObject，FMDB里就用到这个来防止死锁，来看看FMDB的部分源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">static const void * const kDispatchQueueSpecificKey = &amp;kDispatchQueueSpecificKey;</div><div class="line">//创建一个串行队列来执行数据库的所有操作</div><div class="line"> _queue = dispatch_queue_create([[NSString stringWithFormat:@&quot;fmdb.%@&quot;, self] UTF8String], NULL);</div><div class="line"></div><div class="line"> //通过key标示队列，设置context为self</div><div class="line"> dispatch_queue_set_specific(_queue, kDispatchQueueSpecificKey, (__bridge void *)self, NULL);</div></pre></td></tr></table></figure>
+<p>当要执行数据库操作时，如果在queue里面的block执行过程中，又调用了 indatabase方法，需要检查是不是同一个queue，因为同一个queue的话会产生死锁情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (void)inDatabase:(void (^)(FMDatabase *db))block &#123;</div><div class="line">    FMDatabaseQueue *currentSyncQueue = (__bridge id)dispatch_get_specific(kDispatchQueueSpecificKey);</div><div class="line">    assert(currentSyncQueue != self &amp;&amp; &quot;inDatabase: was called reentrantly on the same queue, which would lead to a deadlock&quot;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_apply<br>dispatch_apply类似一个for循环，会在指定的dispatch queue中运行block任务n次，如果队列是并发队列，则会并发执行block任务，dispatch_apply是一个同步调用，block任务执行n次后才返回。<br>简单的使用方法</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;myqueue&quot;, DISPATCH_QUEUE_CONCURRENT);</div><div class="line">//并发的运行一个block任务5次</div><div class="line">dispatch_apply(5, queue, ^(size_t i) &#123;</div><div class="line">    NSLog(@&quot;do a job %zu times&quot;,i+1);</div><div class="line">&#125;);</div><div class="line">NSLog(@&quot;go on&quot;);</div></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">GCDTests[10029:760640] do a job 2 times</div><div class="line">GCDTests[10029:760640] do a job 1 times</div><div class="line">GCDTests[10029:760640] do a job 3 times</div><div class="line">GCDTests[10029:760640] do a job 5 times</div><div class="line">GCDTests[10029:760640] do a job 4 times</div><div class="line">GCDTests[10029:760640] go on</div></pre></td></tr></table></figure>
+<p>在某些场景下使用dispatch_apply会对性能有很大的提升，比如你的代码需要以每个像素为基准来处理计算image图片。同时dispatch apply能够避免一些线程爆炸的情况发生（创建很多线程）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">//危险，可能导致线程爆炸以及死锁</div><div class="line">for (int i = 0; i &lt; 999; i++)&#123;</div><div class="line">   dispatch_async(q, ^&#123;...&#125;);</div><div class="line">&#125;</div><div class="line">dispatch_barrier_sync(q, ^&#123;&#125;);</div><div class="line"></div><div class="line">// 较优选择， GCD 会管理并发</div><div class="line">dispatch_apply(999, q, ^(size_t i)&#123;...&#125;);</div></pre></td></tr></table></figure>
+<h3 id="Dispatch-Block"><a href="#Dispatch-Block" class="headerlink" title="Dispatch Block"></a>Dispatch Block</h3><p>添加到gcd队列中执行的任务是以block的形式添加的，block封装了需要执行功能，block带来的开发效率提升就不说了，gcd跟block可以说是一对好基友，能够很好的配合使用。</p>
+<ul>
+<li>创建block</li>
+</ul>
+<p>我们可以自己创建block并添加到queue中去执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">//创建block</div><div class="line">dispatch_block_t block = dispatch_block_create(0, ^&#123;</div><div class="line">        NSLog(@&quot;do something&quot;);</div><div class="line">    &#125;);</div><div class="line">dispatch_async(queue, block);</div></pre></td></tr></table></figure>
+<p>在创建block的时候我们也可以通过设置QoS，指定block对应的优先级，在dispatch_block_create_with_qos_class中指定QoS类别即可：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">dispatch_block_t block = dispatch_block_create_with_qos_class(0, QOS_CLASS_USER_INITIATED, -1, ^&#123;</div><div class="line">        NSLog(@&quot;do something with QoS&quot;);</div><div class="line">    &#125;);</div><div class="line">dispatch_async(queue, block);</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_block_wait</li>
+</ul>
+<p>当需要等待前面的任务执行完毕时，我们可以使用dispatch_block_wait这个接口，设置等待时间DISPATCH_TIME_FOREVER会一直等待直到前面的任务完成：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">dispatch_block_t block = dispatch_block_create(0, ^&#123;</div><div class="line">    NSLog(@&quot;before sleep&quot;);</div><div class="line">    [NSThread sleepForTimeInterval:1];</div><div class="line">    NSLog(@&quot;after sleep&quot;);</div><div class="line">&#125;);</div><div class="line">dispatch_async(queue, block);</div><div class="line">//等待前面的任务执行完毕</div><div class="line">dispatch_block_wait(block, DISPATCH_TIME_FOREVER);</div><div class="line">NSLog(@&quot;coutinue&quot;);</div></pre></td></tr></table></figure>
+<p>程序运行结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GCDTests[16679:863641] before sleep</div><div class="line">GCDTests[16679:863641] after sleep</div><div class="line">GCDTests[16679:863529] coutinue</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_block_notify</li>
+</ul>
+<p>dispatch_block_notify当观察的某个block执行结束之后立刻通知提交另一特定的block到指定的queue中执行，该函数有三个参数，第一参数是需要观察的block，第二个参数是被通知block提交执行的queue，第三参数是当需要被通知执行的block，函数的原型:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">void dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue,</div><div class="line">      dispatch_block_t notification_block);</div></pre></td></tr></table></figure>
+<p>具体使用的方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">  dispatch_block_t previousBlock = dispatch_block_create(0, ^&#123;</div><div class="line">      NSLog(@&quot;previousBlock begin&quot;);</div><div class="line">      [NSThread sleepForTimeInterval:1];</div><div class="line">      NSLog(@&quot;previousBlock done&quot;);</div><div class="line">  &#125;);</div><div class="line">  dispatch_async(queue, previousBlock);</div><div class="line">  dispatch_block_t notifyBlock = dispatch_block_create(0, ^&#123;</div><div class="line">      NSLog(@&quot;notifyBlock&quot;);</div><div class="line">  &#125;);</div><div class="line">  //当previousBlock执行完毕后，提交notifyBlock到global queue中执行</div><div class="line">  dispatch_block_notify(previousBlock, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), notifyBlock);</div></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GCDTests[17129:895673] previousBlock begin</div><div class="line">GCDTests[17129:895673] previousBlock done</div><div class="line">GCDTests[17129:895673] notifyBlock</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_block_cancel</li>
+</ul>
+<p>之前在介绍nsopreration的时候提到它的一个优点是可以取消某个operation，现在在iOS8之后，提交到gcd队列中的dispatch block也可取消了，只需要简单的调用dispatch_block_cancel传入想要取消的block即可:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_SERIAL);</div><div class="line">dispatch_block_t block1 = dispatch_block_create(0, ^&#123;</div><div class="line">    NSLog(@&quot;block1 begin&quot;);</div><div class="line">    [NSThread sleepForTimeInterval:1];</div><div class="line">    NSLog(@&quot;block1 done&quot;);</div><div class="line">&#125;);</div><div class="line">dispatch_block_t block2 = dispatch_block_create(0, ^&#123;</div><div class="line">    NSLog(@&quot;block2 &quot;);</div><div class="line">&#125;);</div><div class="line">dispatch_async(queue, block1);</div><div class="line">dispatch_async(queue, block2);</div><div class="line">dispatch_block_cancel(block2);</div></pre></td></tr></table></figure>
+<p>可以看到如下的执行结果，block2不再执行了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GCDTests[17271:902981] block1 begin</div><div class="line">GCDTests[17271:902981] block1 done</div></pre></td></tr></table></figure>
+<h3 id="Dispatch-Group"><a href="#Dispatch-Group" class="headerlink" title="Dispatch Group"></a>Dispatch Group</h3><p>当我们想在gcd queue中所有的任务执行完毕之后做些特定事情的时候，也就是队列的同步问题，如果队列是串行的话，那将该操作最后添加到队列中即可，但如果队列是并行队列的话，这时候就可以利用dispatch_group来实现了，dispatch_group能很方便的解决同步的问题。dispatch_group_create可以创建一个group对象，然后可以添加block到该组里面，下面看下它的一些用法：</p>
+<ul>
+<li>dispatch_group_wait</li>
+</ul>
+<p>dispatch_group_wait会同步地等待group中所有的block执行完毕后才继续执行,类似于dispatch barrier</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_CONCURRENT);</div><div class="line">dispatch_group_t group = dispatch_group_create();</div><div class="line">//将任务异步地添加到group中去执行</div><div class="line">dispatch_group_async(group,queue,^&#123; NSLog(@&quot;block1&quot;); &#125;);</div><div class="line">dispatch_group_async(group,queue,^&#123; NSLog(@&quot;block2&quot;); &#125;);</div><div class="line">dispatch_group_wait(group,DISPATCH_TIME_FOREVER);</div><div class="line">NSLog(@&quot;go on&quot;);</div></pre></td></tr></table></figure>
+<p>执行结果如下，只有block1跟block2执行完毕后才会执行dispatch_group_wait后面的内容。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GCDTests[954:41031] block2</div><div class="line">GCDTests[954:41032] block1</div><div class="line">GCDTests[954:40847] go on</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_group_notify</li>
+</ul>
+<p>功能与dispatch_group_wait类似，不过该过程是异步的，不会阻塞该线程，dispatch_group_notify有三个参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">void dispatch_group_notify(dispatch_group_t group, //要观察的group</div><div class="line">                         dispatch_queue_t queue,   //block执行的队列</div><div class="line">                         dispatch_block_t block);   //当group中所有任务执行完毕之后要执行的block</div></pre></td></tr></table></figure>
+<p>简单的示意用法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;queue&quot;, DISPATCH_QUEUE_CONCURRENT);</div><div class="line">dispatch_group_t group = dispatch_group_create();</div><div class="line">dispatch_group_async(group,queue,^&#123; NSLog(@&quot;block1&quot;); &#125;);</div><div class="line">dispatch_group_async(group,queue,^&#123; NSLog(@&quot;block2&quot;); &#125;);</div><div class="line">dispatch_group_notify(group, dispatch_get_main_queue(), ^&#123;</div><div class="line">  NSLog(@&quot;done&quot;);</div><div class="line">&#125;);</div><div class="line">NSLog(@&quot;go on&quot;);</div></pre></td></tr></table></figure>
+<p>可以看到如下的执行结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">GCDTests[1046:45104] go on</div><div class="line">GCDTests[1046:45153] block1</div><div class="line">GCDTests[1046:45152] block2</div><div class="line">GCDTests[1046:45104] done</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_group_enter dispatch_group_leave</li>
+</ul>
+<p>假如我们不想使用dispatch_group_async异步的将任务丢到group中去执行，这时候就需要用到dispatch_group_enter跟dispatch_group_leave方法，这两个方法要配对出现，以下这两种方法是等价的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">dispatch_group_async(group, queue, ^&#123; </div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>等价于</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">dispatch_group_enter(group);</div><div class="line">dispatch_async(queue, ^&#123;</div><div class="line">　　dispatch_group_leave(group);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>简单的使用方法，可以自己试试没有写dispatch_group_leave会发生什么。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">dispatch_group_t group = dispatch_group_create();</div><div class="line">for (int i =0 ; i&lt;3; i++) &#123;</div><div class="line">  dispatch_group_enter(group);</div><div class="line">  NSLog(@&quot;do block:%d&quot;,i);</div><div class="line">  dispatch_group_leave(group);</div><div class="line">&#125;</div><div class="line">//等待上面的任务完成</div><div class="line">dispatch_group_wait(group, DISPATCH_TIME_FOREVER);</div><div class="line">NSLog(@&quot;go on&quot;);</div></pre></td></tr></table></figure>
+<h3 id="Dispatch-Semaphore"><a href="#Dispatch-Semaphore" class="headerlink" title="Dispatch Semaphore"></a>Dispatch Semaphore</h3><p>dispatch semaphore也是用来做解决一些同步的问题，dispatch_semaphore_create会创建一个信号量，该函数需要传递一个信号值，dispatch_semaphore_signal会使信号值加1，如果信号值的大小等于1，dispatch_semaphore_wait会使信号值减1，并继续往下走，如果信号值为0，则等待。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">//创建一个信号量，初始值为0</div><div class="line">dispatch_semaphore_t sema = dispatch_semaphore_create(0);</div><div class="line">dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^&#123;</div><div class="line">    NSLog(@&quot;do some job&quot;);</div><div class="line">    sleep(1);</div><div class="line">    NSLog(@&quot;increase the semaphore&quot;);</div><div class="line">    dispatch_semaphore_signal(sema); //信号值加1</div><div class="line">&#125;);</div><div class="line">dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);//等待直到信号值大于等1</div><div class="line">NSLog(@&quot;go on&quot;);</div></pre></td></tr></table></figure>
+<p>执行结果如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GCDTests[1394:92383] do some job</div><div class="line">GCDTests[1394:92383] increase the semaphore</div><div class="line">GCDTests[1394:92326] go on</div></pre></td></tr></table></figure>
+<h3 id="Dispatch-Timer"><a href="#Dispatch-Timer" class="headerlink" title="Dispatch Timer"></a>Dispatch Timer</h3><p>dispatch timer通常配合dispatch_after使用，完成一些延时的任务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">//延迟5秒后执行任务</div><div class="line">dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC));</div><div class="line">dispatch_after(time, dispatch_get_main_queue(), ^&#123;</div><div class="line">    NSLog(@&quot;do job afer 5 seconds&quot;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h3 id="Dispatch-IO"><a href="#Dispatch-IO" class="headerlink" title="Dispatch IO"></a>Dispatch IO</h3><p>当我们要读取一份较大文件的时候，多个线程同时去读肯定比一个线程去读的速度要快，要实现这样的功能可以通过dispatch io跟dispatch data来实现，通过dispatch io去读文件时，会使用global dispatch queue将一个文件按照一个指定的分块大小同时去读取数据，类似于：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">dispatch_async(queue, ^&#123;/* 读取0-99字节 */&#125;);</div><div class="line">dispatch_async(queue, ^&#123;/* 读取100-199字节 */&#125;);</div><div class="line">dispatch_async(queue, ^&#123;/* 读取200-299字节 */&#125;);</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>将文件分成一块一块并行的去读取，读取的数据通过Dispatch Data可以更为简单地进行结合和分割 。</p>
+<p>dispatch_io_create<br>生成Dispatch IO,指定发生错误时用来执行处理的Block,以及执行该Block的Dispatch Queue<br>dispatch_io_set_low_water<br>设定一次读取的大小（分割的大小）<br>dispatch_io_read<br>使用Global Dispatch Queue开始并列读取，当每个分割的文件块读取完毕时，会将含有文件数据的dispatch data返回到dispatch_io_read设定的block，在block中需要分析传递过来的dispatch data进行合并处理<br>可以看下苹果的系统日志API(Libc-763.11 gen/asl.c)的源代码使用到了dispatch IO：<a href="https://github.com/Apple-FOSS-Mirror/Libc/blob/2ca2ae74647714acfc18674c3114b1a5d3325d7d/gen/asl.c" target="_blank" rel="external">源码地址</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">//dispatch_io_create出错时handler执行的队列</div><div class="line">pipe_q = dispatch_queue_create(&quot;PipeQ&quot;, NULL);</div><div class="line">pipe_channel = dispatch_io_create(DISPATCH_IO_STREAM, fd, pipe_q, ^(int err)&#123;</div><div class="line">    //出错时执行的handler</div><div class="line">    close(fd);</div><div class="line">&#125;);</div><div class="line">*out_fd = fdpair[1];</div><div class="line"></div><div class="line">//设定一次读取的大小(分割大小)</div><div class="line">dispatch_io_set_low_water(pipe_channel, SIZE_MAX);</div><div class="line">dispatch_io_read(pipe_channel, 0, SIZE_MAX, pipe_q, ^(bool done, dispatch_data_t pipedata, int err)&#123;</div><div class="line">    if (error)</div><div class="line">        return;</div><div class="line">    if (err == 0)</div><div class="line">    &#123;</div><div class="line">        //每次读取到数据进行数据的处理</div><div class="line">        size_t len = dispatch_data_get_size(pipedata);</div><div class="line">        if (len &gt; 0)</div><div class="line">        &#123;</div><div class="line">            const char *bytes = NULL;</div><div class="line">            char *encoded;</div><div class="line">            uint32_t eval;</div><div class="line">            dispatch_data_t md = dispatch_data_create_map(pipedata, (const void **)&amp;bytes, &amp;len);</div><div class="line">            encoded = asl_core_encode_buffer(bytes, len);</div><div class="line">            asl_msg_set_key_val(aux, ASL_KEY_AUX_DATA, encoded);</div><div class="line">            free(encoded);</div><div class="line">            eval = _asl_evaluate_send(NULL, (aslmsg)aux, -1);</div><div class="line">            _asl_send_message(NULL, eval, aux, NULL);</div><div class="line">            asl_msg_release(aux);</div><div class="line">            dispatch_release(md);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    if (done)</div><div class="line">    &#123;</div><div class="line">        //并发读取完毕</div><div class="line">        dispatch_semaphore_signal(sem);</div><div class="line">        dispatch_release(pipe_channel);</div><div class="line">        dispatch_release(pipe_q);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>假如你的数据文件比较大，可以考虑采用dispatch IO的方式来提高读取的速率。</p>
+<h3 id="Dispatch-Source"><a href="#Dispatch-Source" class="headerlink" title="Dispatch Source"></a>Dispatch Source</h3><p>dispatch框架提供一套接口用于监听系统底层对象(如文件描述符、Mach端口、信号量等)，当这些对象有事件产生时会自动把事件的处理block函数提交到dispatch队列中执行，这套接口就是Dispatch Source API，Dispatch Source其实就是对kqueue功能的封装，可以去查看dispatch_source的c源码实现(什么是kqueue？Google，什么是Mach端口? Google Again)，Dispatch Source主要处理以下几种事件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">DISPATCH_SOURCE_TYPE_DATA_ADD   变量增加</div><div class="line">DISPATCH_SOURCE_TYPE_DATA_OR    变量OR</div><div class="line">DISPATCH_SOURCE_TYPE_MACH_SEND  Mach端口发送</div><div class="line">DISPATCH_SOURCE_TYPE_MACH_RECV  Mach端口接收</div><div class="line">DISPATCH_SOURCE_TYPE_MEMORYPRESSURE 内存压力情况变化</div><div class="line">DISPATCH_SOURCE_TYPE_PROC       与进程相关的事件</div><div class="line">DISPATCH_SOURCE_TYPE_READ       可读取文件映像</div><div class="line">DISPATCH_SOURCE_TYPE_SIGNAL     接收信号</div><div class="line">DISPATCH_SOURCE_TYPE_TIMER      定时器事件</div><div class="line">DISPATCH_SOURCE_TYPE_VNODE      文件系统变更</div><div class="line">DISPATCH_SOURCE_TYPE_WRITE      可写入文件映像</div></pre></td></tr></table></figure>
+<p>当有事件发生时，dispatch source自动将一个block放入一个dispatch queue执行。</p>
+<ul>
+<li>dispatch_source_create</li>
+</ul>
+<p>创建一个dispatch source，需要指定事件源的类型,handler的执行队列，dispatch source创建完之后将处于挂起状态。此时dispatch source会接收事件，但是不会进行处理，你需要设置事件处理的handler，并执行额外的配置；同时为了防止事件堆积到dispatch queue中，dispatch source还会对事件进行合并，如果新事件在上一个事件处理handler执行之前到达，dispatch source会根据事件的类型替换或者合并新旧事件。</p>
+<ul>
+<li>dispatch_source_set_event_handler</li>
+</ul>
+<p>给指定的dispatch source设置事件发生的处理handler</p>
+<ul>
+<li>dispatch_source_set_cancel_handler</li>
+</ul>
+<p>给指定的dispatch source设置一个取消处理handler，取消处理handler会在dispatch soruce释放之前做些清理工作，比如关闭文件描述符:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dispatch_source_set_cancel_handler(mySource, ^&#123; </div><div class="line">   close(fd); //关闭文件秒速符 </div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<ul>
+<li>dispatch_source_cancel</li>
+</ul>
+<p>异步地关闭dispatch source，这样后续的事件发生时不去调用对应的事件处理handler，但已经在执行的handler不会被取消。<br>很多第三方库会用到dispatch source的功能，比如著名的IM框架XMPPFramework在涉及到定时器的时候都采用这种方法，比如发送心跳包的时候(setupKeepAliveTimer)。<br>一个简单的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">//如果dispatch source是本地变量，会被释放掉，需要这么声明</div><div class="line">@property (nonatomic)dispatch_source_t timerSource;</div><div class="line"></div><div class="line">//事件handler的处理队列</div><div class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;myqueue&quot;, NULL);</div><div class="line"></div><div class="line">//</div><div class="line">_timerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);</div><div class="line"></div><div class="line">//定时器间隔时间</div><div class="line">uint64_t interval = 2 * NSEC_PER_SEC;</div><div class="line">//设置定时器信息</div><div class="line">dispatch_source_set_timer(_timerSource,DISPATCH_TIME_NOW, interval , 0);</div><div class="line"></div><div class="line">//设置事件的处理handler</div><div class="line">dispatch_source_set_event_handler(_timerSource, ^&#123;</div><div class="line">    NSLog(@&quot;receive time event&quot;);</div><div class="line">    //if (done) </div><div class="line">    //   dispatch_source_cancel(_timerSource); </div><div class="line">&#125;);</div><div class="line">//开始处理定时器事件，dispatch_suspend暂停处理事件</div><div class="line">dispatch_resume(_timerSource);</div></pre></td></tr></table></figure>
+<p>定时器还可以通过NSTimer实现，不过NSTimer会跟runloop关联在一起，主线层默认有一个runloop，假如你nstimer是运行在子线程，就需要自己手动开启一个runloop，而且nstimer默认是在NSDefaultRunLoopMode模式下的，所以当runloop切换到其它模式nstimer就不会运行，需要手动将nstimer添加到NSRunLoopCommonModes模式下；而dispatch source timer不跟runloop关联，所以有些场景可以使用这种方法。</p>
+<p>本文总结了GCD的一些用法，不过有些API可能iOS8之后才可以用，如有还有什么可以补充的，欢迎提出～</p>
+<h3 id="部分参考"><a href="#部分参考" class="headerlink" title="部分参考"></a>部分参考</h3><p>dispatch源码地址：<a href="http://libdispatch.macosforge.org/" target="_blank" rel="external">http://libdispatch.macosforge.org</a><br><a href="https://developer.apple.com/videos/play/wwdc2015/718/" target="_blank" rel="external">Building Responsive and Efficient Apps with GCD</a><br><a href="https://developer.apple.com/library/prerelease/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/" target="_blank" rel="external">Grand Central Dispatch (GCD) Reference</a><br><a href="https://www.amazon.cn/Objective-C%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B-iOS%E4%B8%8EOS-X%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%92%8C%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E5%9D%82%E6%9C%AC%E4%B8%80%E6%A0%91/dp/B00DE60G3S/ref=sr_1_8?ie=UTF8&amp;qid=1447952737&amp;sr=8-8&amp;keywords=iOS" target="_blank" rel="external">Objective-C高级编程:iOS与OS X多线程和内存管理</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/09/15/GCD/" data-id="cj7lwtglj0003z76f3adurdnr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -481,7 +678,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li></ul>
     </div>
   </div>
 
